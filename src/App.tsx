@@ -24,8 +24,17 @@ function App() {
   const handleShortened = async () => {
     setShortUrl("");
     setLoading(true);
-    shorten(longUrl).then((value) => {
-      setShortUrl(value);
+    shorten(longUrl).then((result) => {
+
+      if (result.status === 'success'
+      ) {
+        setShortUrl(result.shortened_url);
+
+      } else {
+        setServerErrorMessage(result.error_message)
+        // I wonder if we should just make this a useEffect
+        setShowServerError(true)
+      }
       setLoading(false);
     });
   };
@@ -57,7 +66,7 @@ function App() {
       } else {
         setIsValidLongUrl(true);
       }
-    }, 2000);
+    }, 500);
 
     return () => clearTimeout(handler);
   }, [longUrl]);
