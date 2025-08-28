@@ -1,21 +1,80 @@
+import { useEffect, useState } from "react";
 import "./App.css";
+import { isValidURL, shorten } from "./lib/utils";
 
 function App() {
+  const [longUrl, setLongUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+
+  // States for the send button
+  const [loading, setLoading] = useState(false);
+  const [isValidLongUrl, setIsValidLongUrl] = useState(false)
+
+  // TODO: Make a better error message handling? Maybe a list of errors or something
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showError, setShowError] = useState(false);
+
+  // Event handlers
+
+  const handleShortened = async () => {
+    setShortUrl("");
+    setLoading(true);
+    shorten(longUrl).then((value) => {
+      setShortUrl(value);
+      setLoading(false);
+    });
+  };
+
+  const handleInputChange = (value: string) => {
+    if (shortUrl){
+      setShortUrl("")
+    }
+    setShowError(false);
+    setLongUrl(value);
+  };
+
+  // Auto check if long url is valid
+  useEffect(() => {
+    setIsValidLongUrl(false)
+    if (!longUrl) return;
+
+    const handler = setTimeout(() => {
+      // TODO: Maybe this could be a chain of responsibility thing that returns a list of errors
+      if (!isValidURL(longUrl)) {
+        setErrorMessage("Must be a valid url");
+
+        // TODO: Separate this logic? Maybe use a useEffect to detect changes in error message and then show?
+        setShowError(true);
+      } else {
+        setIsValidLongUrl(true)
+      }
+
+    }, 2000);
+
+    return () => clearTimeout(handler);
+  }, [longUrl]);
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-blue-400 to-blue-700 text-white flex items-center flex-col">
-      <h1 className="text-2xl font-bold py-10">URL SHORTENER</h1>
-      <p>Paste your long url below to shorten:</p>
+      <h1 className="text-4xl font-bold pb-20 pt-20">URL SHORTENER</h1>
+
+      <div className="w-[90vw] max-w-[650px]">
+        <p>Paste your long url below to shorten.</p>
+      </div>
 
       {/* input */}
-      <div className="w-[90vw] max-w-[650px]  mt-8 flex ">
+      <div className="w-[90vw] max-w-[650px]  mt-8 flex relative ">
         <div className="relative grow-1 bg-white py-3 px-4">
           <input
             type="text"
-            className=" text-black focus-visible:outline-none w-full "
+            className=" text-black disabled:text-gray-500 focus-visible:outline-none w-full "
+            value={longUrl}
+            onChange={(e) => handleInputChange(e.target.value)}
+            disabled={loading}
           />
 
           {/* clipboard paste */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900  hover:text-blue-700 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -34,7 +93,28 @@ function App() {
         </div>
 
         {/* send */}
-        <div className="h-[48px] aspect-square bg-blue-950 flex items-center justify-center">
+        <button
+          onClick={handleShortened}
+          className={`h-[48px] aspect-square  flex items-center ${loading ? 'bg-blue-800': "hover:bg-blue-800 bg-blue-900"}   justify-center  cursor-pointer disabled:cursor-not-allowed`}
+          disabled={loading || !isValidLongUrl}
+        >
+        
+
+{
+  loading ? (
+
+<div role="status">
+    <svg aria-hidden="true" className="w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+    </svg>
+    <span className="sr-only">Loading...</span>
+</div>
+
+  ) : (
+
+        <div className=" ">
+
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -42,44 +122,57 @@ function App() {
             strokeWidth="1.5"
             stroke="currentColor"
             className="size-6"
-          >
+            >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-            />
+              />
           </svg>
-        </div>
+              </div>
+  )
+}
+
+        </button>
+
+        {/* Error message */}
+        {showError && errorMessage && (
+          <p className="absolute left-0 -bottom-8 w-fit py-1 px-2 text-xs bg-white text-black">
+            <span className="text-red-500">* </span>
+            {errorMessage}
+          </p>
+        )}
       </div>
 
-      {/* result wrapper */}
-      <div className="w-[90vw] max-w-[650px] flex  flex-col mt-8">
-        <h3>shortened url:</h3>
+      {shortUrl && (
+        <div className="w-[90vw] max-w-[650px] flex  flex-col mt-8">
+          <h3 className="font-semibold">shortened url:</h3>
 
-        {/* result */}
-        <div className="flex justify-center mt-4">
-          <div className="bg-white py-3 px-4 text-black w-fit flex items-center gap-4">
-            <span>https://something.com</span>
-            
-            <button className="text-blue-900">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                />
-              </svg>
-            </button>
+          {/* result */}
+          <div className="flex justify-center mt-4">
+            <div className="bg-white py-3  min-w-60 justify-between px-4 text-black w-fit flex items-center gap-4">
+              <span className="">{shortUrl}</span>
+
+              <button className="text-blue-900  hover:text-blue-700 cursor-pointer">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
