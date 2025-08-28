@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { isValidURL, shorten } from "./lib/utils";
+import {
+  copyToClipboard,
+  isValidURL,
+  pasteFromClipboard,
+  shorten,
+} from "./lib/utils";
+import clsx from "clsx";
 
 function App() {
   const [longUrl, setLongUrl] = useState("");
@@ -19,21 +25,21 @@ function App() {
   const [serverErrorMessage, setServerErrorMessage] = useState("");
   const [showServerError, setShowServerError] = useState(false);
 
+  // Popups
+  const [showCopiedPopup, setShowCopiedPopup] = useState(false);
+
   // Event handlers
 
   const handleShortened = async () => {
     setShortUrl("");
     setLoading(true);
     shorten(longUrl).then((result) => {
-
-      if (result.status === 'success'
-      ) {
+      if (result.status === "success") {
         setShortUrl(result.shortened_url);
-
       } else {
-        setServerErrorMessage(result.error_message)
+        setServerErrorMessage(result.error_message);
         // I wonder if we should just make this a useEffect
-        setShowServerError(true)
+        setShowServerError(true);
       }
       setLoading(false);
     });
@@ -43,14 +49,29 @@ function App() {
     if (shortUrl) {
       setShortUrl("");
     }
-    if (showServerError){
-      setShowServerError(false)
+    if (showServerError) {
+      setShowServerError(false);
     }
-    
+
     setShowClientError(false);
     setLongUrl(value);
   };
 
+  const handlePasteFromClipboard = async () => {
+    const text = await pasteFromClipboard();
+    if (text) {
+      setLongUrl(text);
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    copyToClipboard(shortUrl).then(()=> {
+      setShowCopiedPopup(true)
+    })
+
+  }
+
+  // Debounced
   // Auto check if long url is valid
   useEffect(() => {
     setIsValidLongUrl(false);
@@ -59,7 +80,9 @@ function App() {
     const handler = setTimeout(() => {
       // TODO: Maybe this could be a chain of responsibility thing that returns a list of errors
       if (!isValidURL(longUrl)) {
-        setClientErrorMessage("Must be a valid url. For example: https://google.com");
+        setClientErrorMessage(
+          "Must be a valid url. For example: https://google.com"
+        );
 
         // TODO: Separate this logic? Maybe use a useEffect to detect changes in error message and then show?
         setShowClientError(true);
@@ -70,6 +93,18 @@ function App() {
 
     return () => clearTimeout(handler);
   }, [longUrl]);
+
+
+  useEffect(() => {
+    if (!showCopiedPopup) return
+
+    const handler = setTimeout(() => {
+      setShowCopiedPopup(false)
+    }, 800)
+
+    return () => clearTimeout(handler)
+
+  }, [showCopiedPopup])
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-blue-400 to-blue-700 text-white flex items-center flex-col">
@@ -90,8 +125,11 @@ function App() {
             disabled={loading}
           />
 
-          {/* clipboard paste */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900  hover:text-blue-700 cursor-pointer">
+          {/* clipboard paste from */}
+          <button
+            onClick={handlePasteFromClipboard}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900  hover:text-blue-700 cursor-pointer"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -106,14 +144,14 @@ function App() {
                 d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
               />
             </svg>
-          </div>
+          </button>
         </div>
 
         {/* send */}
 
         {loading ? (
           <div className="h-[48px] aspect-square flex items-center justify-center bg-blue-900 cursor-not-allowed">
-            <div role="status" >
+            <div role="status">
               <svg
                 aria-hidden="true"
                 className="w-6 h-6 text-gray-200 animate-spin  fill-blue-600"
@@ -165,11 +203,9 @@ function App() {
           <div className="absolute w-full left-0 -bottom-2 ">
             <div className="relative w-full">
               <p className="absolute w-fit py-1 px-2 text-xs bg-white text-black top-0">
-
-            <span className="text-red-500">* </span>
-            {clientErrorMessage}
+                <span className="text-red-500">* </span>
+                {clientErrorMessage}
               </p>
-
             </div>
           </div>
         )}
@@ -181,10 +217,13 @@ function App() {
 
           {/* result */}
           <div className="flex justify-center mt-4">
-            <div className="bg-white py-3  min-w-60 justify-between px-4 text-black w-fit flex items-center gap-4">
+            <div className="bg-white py-3  min-w-60 justify-between px-4 text-black w-fit flex items-center gap-4 relative">
               <span className="">{shortUrl}</span>
 
-              <button className="text-blue-900  hover:text-blue-700 cursor-pointer">
+              <button
+                className="text-blue-900  hover:text-blue-700 cursor-pointer"
+                onClick={handleCopyToClipboard}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -200,6 +239,33 @@ function App() {
                   />
                 </svg>
               </button>
+
+              {/* Copied popup */}
+              <div
+                className={clsx(
+                  "absolute -bottom-18 flex gap-2 px-3 py-3 left-1/2 -translate-x-1/2 text-green-800 bg-green-50 transition-opacity duration-300",
+                  showCopiedPopup ? "opacity-100" : "opacity-0"
+                )}
+              >
+                {/* icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12"
+                  />
+                </svg>
+
+                {/* text */}
+                <span>Copied</span>
+              </div>
             </div>
           </div>
         </div>
@@ -225,7 +291,8 @@ function App() {
           </div>
 
           <p>
-            {serverErrorMessage || "There was an error connecting to the server. Please try again later."}
+            {serverErrorMessage ||
+              "There was an error connecting to the server. Please try again later."}
           </p>
         </div>
       )}
