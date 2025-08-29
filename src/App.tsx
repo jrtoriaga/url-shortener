@@ -61,6 +61,9 @@ function App() {
   const handlePasteFromClipboard = async () => {
     const text = await pasteFromClipboard();
     if (text) {
+
+      if (shortUrl) setShortUrl("")
+
       setLongUrl(text);
       setShowPastedPopup(true)
     }
@@ -118,11 +121,11 @@ function App() {
   }, [showPastedPopup]);
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-blue-400 to-blue-700 text-white flex items-center flex-col">
-      <h1 className="text-4xl font-bold pb-20 pt-20">URL SHORTENER</h1>
+    <div className="w-screen h-screen bg-gradient-to-r from-blue-400 to-blue-700 text-white flex items-center flex-col font-roboto">
+      <h1 className="text-4xl  font-light pb-20 pt-20">URL SHORTENER</h1>
 
       <div className="w-[90vw] max-w-[650px]">
-        <p>Paste your long url below to shorten.</p>
+        <p className="font-normal">Paste your long url below to shorten.</p>
       </div>
 
       {/* input */}
@@ -130,7 +133,7 @@ function App() {
         <div className="relative grow-1 bg-white py-3 px-4">
           <input
             type="text"
-            className=" text-black disabled:text-gray-500 focus-visible:outline-none w-full "
+            className=" text-gray-800 disabled:text-gray-500 focus-visible:outline-none w-full "
             value={longUrl}
             onChange={(e) => handleInputChange(e.target.value)}
             disabled={loading}
@@ -240,7 +243,7 @@ function App() {
         {showClientError && clientErrorMessage && (
           <div className="absolute w-full left-0 -bottom-2 ">
             <div className="relative w-full">
-              <p className="absolute w-fit py-1 px-2 text-xs bg-white text-black top-0">
+              <p className="absolute w-fit py-1 px-2 text-xs bg-white text-gray-800 top-0">
                 <span className="text-red-500">* </span>
                 {clientErrorMessage}
               </p>
@@ -255,7 +258,7 @@ function App() {
 
           {/* result */}
           <div className="flex justify-center mt-4">
-            <div className="bg-white py-3  min-w-60 justify-between px-4 text-black w-fit flex items-center gap-4 relative">
+            <div className="bg-white py-3  min-w-60 justify-between px-4 text-gray-800 w-fit flex items-center gap-4 relative">
               <span className="">{shortUrl}</span>
 
               <button
@@ -311,7 +314,7 @@ function App() {
 
       {/* Server error message */}
       {showServerError && (
-        <div className="flex items-center bg-white w-fit text-black py-2 px-3 gap-2 mt-8 mx-4">
+        <div className="flex items-center bg-white w-fit text-gray-800 py-2 px-3 gap-2 mt-8 mx-4">
           {/* icon */}
           <div className="text-red-600">
             <svg
