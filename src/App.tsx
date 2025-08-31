@@ -125,24 +125,28 @@ function App() {
       <h1 className="text-4xl  font-light pb-20 pt-20">URL SHORTENER</h1>
 
       <div className="w-[90vw] max-w-[650px]">
-        <p className="font-normal">Paste your long url below to shorten.</p>
+        <label htmlFor="url-input" className="font-normal">Paste your long url below to shorten.</label>
       </div>
 
       {/* input */}
       <div className="w-[90vw] max-w-[650px]  mt-8 flex relative ">
         <div className="relative grow-1 bg-white py-3 px-4">
           <input
-            type="text"
+          id="url-input"
+            type="url"
             className=" text-gray-800 disabled:text-gray-500 focus-visible:outline-none w-full "
             value={longUrl}
             onChange={(e) => handleInputChange(e.target.value)}
             disabled={loading}
+            role="url-input"
           />
 
           {/* clipboard paste from */}
           <button
             onClick={handlePasteFromClipboard}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-900  hover:text-blue-700 cursor-pointer"
+            type="submit"
+            aria-label="Shorten URL"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
