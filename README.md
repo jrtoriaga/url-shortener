@@ -3,10 +3,15 @@
 A simple React + Vite web app to shorten long URLs using the Bitly API.
 Deployed with Netlify Functions.
 
+
 ## ✨ Features
 - Shorten long URLs quickly
 - Powered by Bitly API
 - Netlify serverless functions for backend logic
+
+
+## ⚠️ Info
+The deployed Netlify web app of this code is currently paused.
 
 ## 🚀 Installation
 ```bash
