@@ -29,9 +29,9 @@ const handler: Handler = async (event) => {
       statusCode: 200,
       body: JSON.stringify({ shortUrl: data.link }),
     };
-  } catch (err: any) {
-    console.error(err.message)
-    return { statusCode: 500, body: 'Something went wrong.' };
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    return { statusCode: 500, body: "Something went wrong." };
   }
 };
 

@@ -10,11 +10,12 @@ const SHORT_URL = "https://bit.ly/abc123";
 /*                                   Helpers                                  */
 /* -------------------------------------------------------------------------- */
 
-// The url input is exposed with `role="url-input"` in App.tsx.
+// The url input is exposed with `role="url-input"` in UrlForm.tsx.
 const getInput = () => screen.getByRole("url-input") as HTMLInputElement;
 
-// The paste button is the only button with an accessible name.
-const getPasteButton = () => screen.getByRole("button", { name: /shorten url/i });
+// The paste button is the only button with an accessible "paste" name.
+const getPasteButton = () =>
+  screen.getByRole("button", { name: /paste from clipboard/i });
 
 // The input row wrapping the input, paste button and the submit ("send") button.
 const getInputRow = () => getInput().closest("div.flex") as HTMLElement;

@@ -1,5 +1,125 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
+/* ------------------------------------------------------------------ */
+/*  Design tokens — "Editorial / print"                                */
+/*  Warm paper, ink type, a single vermilion accent.                  */
+/* ------------------------------------------------------------------ */
 @theme {
-    --font-roboto: "Roboto", sans-serif;
+  /* Paper & ink */
+  --color-paper: #f4eee2;
+  --color-paper-deep: #e9dfcc;
+  --color-paper-shade: #efe7d8;
+  --color-ink: #1b1714;
+  --color-ink-soft: #5a5049;
+  --color-ink-faint: #8a7f75;
+
+  /* Accent — vermilion printing ink */
+  --color-vermilion: #c8402e;
+  --color-vermilion-deep: #8f2a1c;
+  --color-vermilion-wash: #f0d9d3;
+
+  /* Rules & status */
+  --color-rule: #c9bba4;
+  --color-rule-strong: #1b1714;
+  --color-forest: #2f5d3a;
+  --color-forest-wash: #dbe6d9;
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Motion */
+  --ease-print: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Paper grain: a faint turbulence texture laid over the page. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--color-vermilion);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-vermilion);
+    outline-offset: 3px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utilities                                                          */
+/* ------------------------------------------------------------------ */
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    animation: reveal 0.85s var(--ease-print) forwards;
+  }
+
+  .reveal-late {
+    opacity: 0;
+    animation: reveal 0.85s 0.45s var(--ease-print) forwards;
+  }
+
+  .spin {
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-late {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .spin {
+    animation-duration: 1.4s;
+  }
 }
